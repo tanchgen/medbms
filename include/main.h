@@ -6,6 +6,7 @@
 
 #include "stm32_it.h"
 
+#include "debug.h"
 #include "bitbanding.h"
 #include "types.h"
 #include "tinyalloc.h"

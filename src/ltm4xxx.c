@@ -50,52 +50,6 @@ struct {
 
 extern sI2cDevInfo i2cDevInfo[];
 
-//uint8_t ltmI2cFlag = 0;
-
-ePrmType ltmPrmType[] = {
-    PRM_TYPE_PEAK,      // vin
-    PRM_TYPE_ONLIM,     // vinLimOn
-    PRM_TYPE_PEAK,      // iin
-    PRM_TYPE_ONLIM,     // iinLimOn
-    PRM_TYPE_PEAK,      // pin
-    PRM_TYPE_ONLIM,     // pinLimOn
-    PRM_TYPE_PEAK,      // vout
-    PRM_TYPE_OFFLIM,    // voutLimOff
-    PRM_TYPE_ONLIM,     // voutLimOn
-    PRM_TYPE_PEAK,      // iout
-    PRM_TYPE_OFFLIM,    // ioutLimOff
-    PRM_TYPE_ONLIM,     // ioutLimOn
-    PRM_TYPE_PEAK,      // pout
-    PRM_TYPE_OFFLIM,    // poutLimOff
-    PRM_TYPE_ONLIM,     // poutLimOn
-    PRM_TYPE_PEAK,      // tch
-    PRM_TYPE_ONLIM,     // tchLimOn
-    PRM_TYPE_PEAK,      // tic
-    PRM_TYPE_ONLIM,     // ticLimOn
-};
-
-eParamId ltmDeviPrmid[] = {
-    PRM_VIN,      // vin
-    PRM_VIN,      // vinLimOn
-    PRM_IIN,      // iin
-    PRM_IIN,      // iinLimOn
-    PRM_PIN,      // pin
-    PRM_PIN,      // pinLimOn
-    PRM_VOUT,     // vout
-    PRM_VOUT,     // voutLimOff
-    PRM_VOUT,     // voutLimOn
-    PRM_IOUT,     // iout
-    PRM_IOUT,     // ioutLimOff
-    PRM_IOUT,     // ioutLimOn
-    PRM_POUT,     // pout
-    PRM_POUT,     // poutLimOff
-    PRM_POUT,     // poutLimOn
-    PRM_T1,       // tch
-    PRM_T1,       // tchLimOn
-    PRM_T2,       // tic
-    PRM_T2,       // ticLimOn
-};
-
 struct timer_list ltmOntimer;
 
 // ======================== Протипы функций =======================================
@@ -110,7 +64,7 @@ void arch_addPartialPout(float partial_p_out, uint8_t src);
 //}
 //
 
-void ltmPeakReset( eI2cDev idx ) {
+void bq3588PeakReset( void ) {
   sLtm4xxxDev  *ltm = (sLtm4xxxDev *)i2cDevInfo[idx].srcData;
 
   ltm->status.u32stat |= LTM4XXX_PEAK_DATA_NOK_STATUS_BIT;

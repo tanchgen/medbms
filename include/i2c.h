@@ -10,14 +10,15 @@
 
 #include "stm32f10x.h"
 
-#define PRESS_I2C           I2C1
-#define I2C_FS_SPEED            400000UL
-#define PRESS_I2C_ADDR      (0x6D << 1)
+#define I2Cx                 I2C1
+#define I2C_FS_SPEED         400000UL
+//#define I2C_ADDR             (0x6D << 1)
 
 #define I2C_WRITE_BIT       0x1
 #define I2C_READ_BIT        0x0
 
-#define I2C_PACK_MAX      10
+#define I2C_PACK_MAX        128
+#define I2C_BUSY_TOUT       50
 
 // ------------------ REG P_CONFIG ------------------------------
 // Разрешение
@@ -56,17 +57,6 @@ typedef enum {
   I2C_STATE_ERR
 } eI2cState;
 
-typedef enum _pressreg {
-  REG_PRESS_MSB,
-  REG_PRESS_CSB,
-  REG_PRESS_LSB,
-  REG_T_MSB,
-  REG_T_LSB,
-  REG_CMD,
-  REG_SYS_CFG,
-  REG_P_CFG,
-  REG_NUM
-} ePressReg;
 
 // Список операций конфигурации и работы датчика
 typedef enum _pressProgr {
@@ -129,19 +119,27 @@ typedef union _pcfg {
 // ---------------------------------------------------------------------------------
 
 typedef struct _i2ctrans {
-  ePressReg reg;
-  uint8_t txData;
-  volatile uint8_t txLen;
-  volatile uint8_t rxData[3];
-  volatile uint8_t rxLen;
-  volatile uint8_t rxCount;
-  FlagStatus rxDataFlag;  // RESET - оптравляем регистр, 1 - читаем данные из регистра
+  union __aligned(4){
+    struct {
+      uint8_t cmd;
+      uint16_t subcmd1;
+//      uint8_t subcmd2;
+//      uint8_t subcmd3;
+    };
+    uint8_t  u8reg[4];
+    uint16_t u16reg[2];
+    uint16_t u32reg;
+  } reg;
+  uint8_t regLen;
+  uint8_t regCount;
+  uint8_t * data;
+  volatile uint16_t len;
+  volatile uint16_t count;
+  eI2cState state;
+  FlagStatus rxDataFlag;       // RESET - оптравляем регистр, 1 - читаем данные из регистра
+  FlagStatus pec;
+  uint16_t  tout;              /** <Задержка на обработку данных устройством, мс. */
+  FlagStatus parsed;           /** <Признак незначащей для обработки последовательности (например, для I2C-мультиплексора MAX7357) */
 } sI2cTrans;
-
-typedef struct _pressDev {
-  sI2cTrans i2ctrans;
-
-} sPressDev;
-
 
 #endif /* I2C_H_ */

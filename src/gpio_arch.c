@@ -4,7 +4,6 @@
 
 #include "main.h"
 #include "statefunc.h"
-#include "measur.h"
 #include "gpio_arch.h"
 
 #if SIMUL
