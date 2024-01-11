@@ -75,18 +75,12 @@ static inline sI2cTrans * bq30zInSeq( sI2cTrans * trans ){
   trans = bq30zDesCap( trans );          // 1
   // DesignVoltage
   trans = bq30zDesV( trans );          // 1
-  // CellVoltage_3
-  trans = bq30zCellV3( trans );          // 1
-  // CellVoltage_2
-  trans = bq30zCellV2( trans );          // 1
-  // CellVoltage_1
-  trans = bq30zCellV1( trans );          // 1
-  // CellVoltage_0
-  trans = bq30zCellV0( trans );          // 1
-  // Voltage_0
-  trans = bq30zV0( trans );          // 1
-  // Temperature_0
-  trans = bq30zT0( trans );          // 1
+  trans = bq30zCellV3( trans );           // CellVoltage_3
+  trans = bq30zCellV2( trans );           // CellVoltage_2
+  trans = bq30zCellV1( trans );           // CellVoltage_1
+  trans = bq30zCellV0( trans );           // CellVoltage_0
+//  trans = bq30zV0( trans );               // Voltage_0
+//  trans = bq30zT0( trans );               // Temperature_0
 
   return trans;
 }

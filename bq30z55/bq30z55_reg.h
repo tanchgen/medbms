@@ -40,11 +40,11 @@ typedef enum {
   ABS_STATE_OF_CHARGE  =  0x0e,     // AbsoluteStateOfCharge
   REMAIN_CAP  =  0x0f,              // RemainingCapacity
   FULL_CHARGE_CAP  =  0x10,         // FullChargeCapacity
-  RUN_TIME_TO_EMPTY  =  0x11,       // RunTimeToEmpty
-  AVG_TIME_TO_EMPTY  =  0x12,       // AverageTimeToEmpty
-  AVG_TIME_TO_FULL  =  0x13,        // AverageTimeToFull
+  RUN_TIME_EMPTY  =  0x11,          // RunTimeToEmpty
+  AVG_TIME_EMPTY  =  0x12,          // AverageTimeToEmpty
+  AVG_TIME_FULL  =  0x13,           // AverageTimeToFull
   CHARGE_CURR  =  0x14,             // ChargingCurrent
-  CHARG_VOLT  =  0x15,              // ChargingVoltage
+  CHARGE_VOLT  =  0x15,              // ChargingVoltage
   BATT_STATUS  =  0x16,             // BatteryStatus
   CYCLE_COUNT  =  0x17,             // CycleCount
   DESIGN_CAP  =  0x18,              // DesignCapacity
@@ -57,10 +57,13 @@ typedef enum {
   DEVICE_CHEMISTRY  =  0x22,        // DeviceChemistry
   MFR_DATA  =  0x23,                // ManufacturerData
   OPT_MFR_FUNC5  =  0x2f,           // OptionalMfgFunction5
-  OPT_MFR_FUNC4  =  0x3c,           // OptionalMfgFunction4
-  OPT_MFR_FUNC3  =  0x3d,           // OptionalMfgFunction3
-  OPT_MFR_FUNC2  =  0x3e,           // OptionalMfgFunction2
-  OPT_MFR_FUNC1  =  0x3f            // OptionalMfgFunction1
+  CELL_VOLT_3 = 0x3c,               // Cell Voltag
+  CELL_VOLT_2 = 0x3d,               // OptionalMfgFunction3
+  CELL_VOLT_1 = 0x3e,               // OptionalMfgFunction2
+  CELL_VOLT_0 = 0x3f,               // OptionalMfgFunction1
+  MFR_INFO = 0x70,                  // ManufacturerInfo
+  VOLTAGE_FULL = 0x71,              // FullVoltage
+  TEMPERATURE_FULL = 0x72,          // FullTemperature
 } eSbsCmd;
 
 typedef enum {
