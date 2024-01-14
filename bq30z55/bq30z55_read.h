@@ -86,7 +86,6 @@ static inline sI2cTrans * bq30zAvgI( sI2cTrans * trans ) {
 }
 
 // RemainingCapacity
-trans = bq30zRemainCap( trans );          // 1
 static inline sI2cTrans * bq30zRemainCap( sI2cTrans * trans ) {
   trans->state = I2C_STATE_READ;
   trans->reg.cmd = REMAIN_CAP;
@@ -101,42 +100,211 @@ static inline sI2cTrans * bq30zRemainCap( sI2cTrans * trans ) {
 }
 
 // FullChargeCapacity
-trans = bq30zFullChCap( trans );          // 1
-// RunTimeEmpty
-trans = bq30zRunTimeEmpty( trans );          // 1
-// AverageRunTimeEmpty
-trans = bq30zAvgRunTimeEmpty( trans );          // 1
-// ChargingCurrent
-trans = bq30zChI( trans );          // 1
-// ChargingVoltage
-trans = bq30zChV( trans );          // 1
-// BatteryStatus
-trans = bq30zBattStatus( trans );          // 1
-// CycleCount
-trans = bq30zCycleCount( trans );          // 1
-// DesignCapacity
-trans = bq30zDesCap( trans );          // 1
-// DesignVoltage
-trans = bq30zDesV( trans );          // 1
-// CellVoltage_3
-trans = bq30zCellV3( trans );          // 1
-// CellVoltage_2
-trans = bq30zCellV2( trans );          // 1
-// CellVoltage_1
-trans = bq30zCellV1( trans );          // 1
-// CellVoltage_0
-trans = bq30zCellV0( trans );          // 1
-// Voltage_0
-trans = bq30zV0( trans );          // 1
-// Temperature_0
-trans = bq30zT0( trans );          // 1
-
-static inline sI2cTrans * bq30zBattMode( sI2cTrans * trans ) {
+static inline sI2cTrans * bq30zFullChCap( sI2cTrans * trans ) {
   trans->state = I2C_STATE_READ;
-  trans->reg.cmd = BATT_MODE;
+  trans->reg.cmd = FULL_CHARGE_CAP;
   trans->regLen = 1;
   trans->pec = BQ30Z55_PEC;
   trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// RunTimeEmpty
+static inline sI2cTrans * bq30zRunTimeEmpty( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = RUN_TIME_EMPTY;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// AverageRunTimeEmpty
+static inline sI2cTrans * bq30zAvgRunTimeEmpty( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = AVG_TIME_EMPTY;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// ChargingCurrent
+static inline sI2cTrans * bq30zChI( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CHARGE_CURR;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// ChargingVoltage
+trans = bq30zChV( trans );          // 1
+static inline sI2cTrans * bq30zChV( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CHARGE_VOLT;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// BatteryStatus
+trans = bq30zBattStatus( trans );          // 1
+static inline sI2cTrans * bq30zBattStatus( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = BATT_STATUS;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// CycleCount
+trans = bq30zCycleCount( trans );          // 1
+static inline sI2cTrans * bq30zCycleCount( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CYCLE_COUNT;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// DesignCapacity
+static inline sI2cTrans * bq30zDesCap( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = DESIGN_CAP;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// DesignVoltage
+static inline sI2cTrans * bq30zDesV( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = DESIGN_VOLT;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// CellVoltage_3
+static inline sI2cTrans * bq30zCellV3( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CELL_VOLT_3;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// CellVoltage_2
+static inline sI2cTrans * bq30zCellV2( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CELL_VOLT_2;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// CellVoltage_1
+static inline sI2cTrans * bq30zCellV1( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CELL_VOLT_1;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// CellVoltage_0
+static inline sI2cTrans * bq30zCellV0( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = CELL_VOLT_0;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 2;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// Voltage_0
+static inline sI2cTrans * bq30zV0( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = VOLTAGE_FULL;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 12;
+  trans->data = 0;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+// Temperature_0
+static inline sI2cTrans * bq30zT0( sI2cTrans * trans ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = TEMPERATURE_FULL;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 14;
   trans->data = 0;
   trans->tout = 0;
   trans->parsed = true;
