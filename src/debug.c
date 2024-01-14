@@ -71,17 +71,17 @@ const char * alrmMsg[] = {
   "PWR_FULL_OFF_NOW",   // ACT_PSU_ALRT_OFF
 };
 
-const char * pwrStateMsg[PWRSTATE_PWR_ON + 1] = {
-  "PWR_OFF",       // 1
-  "PWR_START",     // 2
-  "I2C_ON",        // 4
-  "FAN_ON",        // 5
-  "RUN_1",         // 6
-  "RUN_2",         // 7
-  "RUN_3",         // 8
-  "ZYNQ_PL_DONE",  // 9
-  "PWR_ON",        // 10
-};
+//const char * pwrStateMsg[PWRSTATE_PWR_ON + 1] = {
+//  "PWR_OFF",       // 1
+//  "PWR_START",     // 2
+//  "I2C_ON",        // 4
+//  "FAN_ON",        // 5
+//  "RUN_1",         // 6
+//  "RUN_2",         // 7
+//  "RUN_3",         // 8
+//  "ZYNQ_PL_DONE",  // 9
+//  "PWR_ON",        // 10
+//};
 
 
 void __attribute__((weak)) dbgSend( const char * buf, uint8_t len){

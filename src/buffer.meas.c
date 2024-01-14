@@ -6,8 +6,9 @@
  */
 
 #include "buffer.meas.h"
+#include "bq30z55.h"
 
-sMeasRec measRecBuff[MEAS_SEQ_NUM_MAX];
+sMeasRec measRecBuff[MEAS_NUM_MAX];
 measBuf_t measBuf;
 
 uint8_t measBuf_Init(measBuf_t* Buffer, sMeasRec * BufferPtr, uint16_t Size, uint16_t recsize ) {

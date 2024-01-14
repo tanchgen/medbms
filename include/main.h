@@ -14,7 +14,7 @@
 #include "iface.h"
 #include "list.h"
 #include "nvic.h"
-#include "pmbus.h"
+#include "smbus.h"
 #include "rcc.h"
 #include "swab.h"
 #include "times.h"

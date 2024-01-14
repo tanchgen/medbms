@@ -17,6 +17,7 @@
 #include "bq30z55_smbus.h"
 
 #define BQ30Z55_CHIP_TYPE   0x010550
+#define MEAS_NUM_MAX        1024
 
 
 typedef struct {
