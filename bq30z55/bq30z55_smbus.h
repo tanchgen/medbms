@@ -8,19 +8,27 @@
 #ifndef BQ30Z55_SMBUS_H_
 #define BQ30Z55_SMBUS_H_
 
+#include <string.h>
+
+#include "tinyalloc.h"
+#include "debug.h"
 //#include "bq30z55.h"
 #include "smbus.h"
 
-#define BQ30Z55_ADDR      (0x6D << 1)
+#define BQ30Z55_ADDR      (0x5A << 1) //(0x6D << 1)
 #define BQ30Z55_PEC       PEC_DISABLE
 
 #include "bq30z55_write.h"
 #include "bq30z55_read.h"
 
+extern const uint8_t bq30zIdKey[16];
+
+eErr bq30zRng( uint8_t * rngM );
 
 // ================================== AUTH SEQUENCE ============================================
-static inline sI2cTrans * bq30zAuthSeq( sI2cTrans * trans, const bool pec ){
+static inline sI2cTrans * bq30zAuthSeq( sI2cTrans * trans ){
   uint8_t authArr[512] = {0};
+  const FlagStatus pec = BQ30Z55_PEC;
 
   memcpy( authArr, bq30zIdKey, 16);
   bq30zRng( &(authArr[16]) );
@@ -29,14 +37,27 @@ static inline sI2cTrans * bq30zAuthSeq( sI2cTrans * trans, const bool pec ){
   authArr[59] = 0x01;
 
 
-  trans = bq30zAuth();
+  trans = bq30zAuth( trans, authArr, pec );
   return trans;
 }
 // ===================================================================================================
 
 // ================================== RESET_SEQUENCE ============================================
-static inline sI2cTrans * bq30zRstSeq( sI2cTrans * trans ){
+static inline sI2cTrans * mpr121CfgSeq( sI2cTrans * trans ){
   const bool pec = BQ30Z55_PEC;
+  uint8_t * pdata;
+
+  assert_param( (pdata = ta_alloc( 1 )) != 0 );
+  *pdata = 0x51;        // FFI = 0x1, CDC = 0x11
+  trans = mpr121afe1Write( trans, pdata, pec );
+  assert_param( (pdata = ta_alloc( 1 )) != 0 );
+  *pdata = 0x2B;        // CDT = 0x1, SFI = 0x1, ESI = 0x101
+  trans = mpr121afe2Write( trans, pdata, pec );
+  return trans;
+}
+
+static inline sI2cTrans * bq30zCfgSeq( sI2cTrans * trans ){
+//  const bool pec = BQ30Z55_PEC;
 
 //  reg = ltmRstPeaks( reg, idx, pec );
   return trans;
@@ -44,6 +65,18 @@ static inline sI2cTrans * bq30zRstSeq( sI2cTrans * trans ){
 // ===================================================================================================================
 
 // ================================== INPUT_SEQUENCE ============================================
+static inline sI2cTrans * mpr121InSeq( sI2cTrans * trans ){
+  uint8_t * pdata;
+
+  assert_param( (pdata = ta_alloc( 1 )) != 0 );
+  *pdata = 0;        // FFI = 0x1, CDC = 0x11
+  trans = mpr121afe1( trans, pdata );
+  assert_param( (pdata = ta_alloc( 1 )) != 0 );
+  *pdata = 0;        // FFI = 0x1, CDC = 0x11
+  trans = mpr121afe2( trans, pdata );
+  return trans;
+}
+
 static inline sI2cTrans * bq30zInSeq( sI2cTrans * trans ){
   // BattaryMode
   trans = bq30zBattMode( trans );          // 1

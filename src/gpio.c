@@ -135,7 +135,8 @@ void gpioPinCmdNow( sGpioPin *pin, FlagStatus act ){
 
 
 void gpioPinSet( sGpioPin *pin ){
-  assert_param( (pin->mode & 0x3) && ((pin->mode & 0x8) == 0) );
+  assert_param( ((pin->mode & 0x3) && ((pin->mode & 0x8) == 0)) \
+                || (pin->mode == GPIO_MODE_IUD));
   pin->gpio->BSRR = pin->pin;
   pin->newstate = Bit_SET;
 }

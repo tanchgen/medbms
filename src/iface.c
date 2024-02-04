@@ -4,43 +4,45 @@
 
 void gpioInit( void );
 void timersInit( void );
-void adcMainInit( void );
+//void adcMainInit( void );
 void usbInit( void );
-void measInit( void );
-//void pressI2cInit( void );
+//void measInit( void );
+void i2cInit( void );
+void bq30z55Init( void );
 
 void gpioEnable( void );
-void adcMainEnable( void );
-//void pressI2cEnable( void );
+//void adcMainEnable( void );
+void i2cEnable( void );
 
 void timersClock( void );
 void gpioClock( void );
-void adcProcess( void );
+//void adcProcess( void );
 void usbClock();
-void measClock( void );
-//void pressI2cClock( void );
+//void measClock( void );
+void i2cClock( void );
 
 void (*funcClock[])( void ) = {
    timersClock,
    gpioClock,
-//   pressI2cClock,
-   adcProcess,
-   measClock,
+   i2cClock,
+//   adcProcess,
+//   measClock,
    usbClock,
 };
 
 void ifaceEnable( void ){
   gpioEnable();
-  adcMainEnable();
-//  pressI2cEnable();
+//  adcMainEnable();
+  i2cEnable();
 }
 
 void ifaceInit( void ){
   timersInit();
-  measInit();
+//  measInit();
   gpioInit();
-//  pressI2cInit();
-  adcMainInit();
+  i2cInit();
+  bq30z55Init();
+//  adcMainInit();
   usbInit();
 }
 

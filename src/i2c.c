@@ -6,11 +6,17 @@
  */
 
 #include "main.h"
-#include "bq30z55_smbus.h"
+#include "bq30z55.h"
 #include "i2c.h"
 
-sGpioPin i2cPinScl = {GPIOB, 1, GPIO_Pin_10, 10, GPIO_MODE_AFOD_10, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
-sGpioPin i2cPinSda = {GPIOB, 1, GPIO_Pin_11, 11, GPIO_MODE_AFOD_10, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
+#ifndef FLAG_Mask
+#define FLAG_Mask               ((uint32_t)0x00FFFFFF)
+#endif // FLAG_Mask
+
+sGpioPin i2cPinScl = {GPIOB, 1, GPIO_Pin_6, 6, GPIO_MODE_AFOD_10, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
+sGpioPin i2cPinSda = {GPIOB, 1, GPIO_Pin_7, 7, GPIO_MODE_AFOD_10, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
+sGpioPin i2cPinSclPu = {GPIOB, 1, GPIO_Pin_0, 0, GPIO_MODE_IUD, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
+sGpioPin i2cPinSdaPu = {GPIOB, 1, GPIO_Pin_1, 1, GPIO_MODE_IUD, GPIO_PULLUP, Bit_SET, Bit_SET, RESET };
 
 
 struct _i2cData {
@@ -33,22 +39,32 @@ int32_t i2cPress;
 uint16_t pressCount;
 int32_t i2cTerm;
 
+// --------------------- FUNCTION PROTOTYPE -----------------------------
+FlagStatus i2cRegWrite( void );
+FlagStatus i2cRegRead( void );
 // ----------------------------------------------------------------------
 // Инициализация шины
-void i2cInit( I2C_TypeDef * i2c ){
+void _i2cInit( I2C_TypeDef * i2c ){
   uint8_t freq = (rccClocks.PCLK1_Frequency/1000000);
   uint32_t tmp;
 
   i2c->CR2 = (i2c->CR2 & ~I2C_CR2_FREQ) | freq;
+#if I2C_FS_ENABLE
   // In FAST MODE I2C
+  i2c->CCR &= ~I2C_CCR_FS;
   i2c->TRISE = (freq * 300) / 1000 + 1;
+#else
+  // In STANDART MODE I2C
+  i2c->CCR &= ~I2C_CCR_FS;
+  i2c->TRISE = freq + 1;
+#endif // I2C_FS_ENABLE
 
   // For dutycicle = 2
-  tmp = rccClocks.PCLK1_Frequency / (I2C_FS_SPEED * 3U);
+  tmp = rccClocks.PCLK1_Frequency / (I2C_SM_SPEED * 2U);
   if( (tmp & I2C_CCR_CCR) == 0 ){
     tmp = 1;
   }
-  i2c->CCR = (i2c->CCR & ~(I2C_CCR_FS | I2C_CCR_DUTY | I2C_CCR_CCR)) | I2C_CCR_FS | tmp;
+  i2c->CCR = (i2c->CCR & ~(I2C_CCR_FS | I2C_CCR_DUTY | I2C_CCR_CCR)) | tmp;
 
   i2c->CR1 |= I2C_CR1_PE;
 }
@@ -78,7 +94,7 @@ void i2cReset( I2C_TypeDef * i2c ){
   {}
   i2c->CR1 &= ~I2C_CR1_SWRST;
 
-  i2cInit( i2c );
+  _i2cInit( i2c );
 }
 
 
@@ -121,12 +137,12 @@ size_t getI2cSequence( void ){
 
   r0 = i2cTrans;
   // Копируем регистры сброса данных.
-  if ( cfgFlag == false ) {
+  if ( bq30z55Dev.cfgFlag == false ) {
     r0 = bq30z55Dev.cfgSequence( r0 );
   }
 
   /* Копируем регистры чтения данных. */
-  r0 = inSequence( r0 );
+  r0 = bq30z55Dev.inSequence( r0 );
 
   len = r0 - i2cTrans;
 
@@ -135,7 +151,7 @@ size_t getI2cSequence( void ){
   assert_param( len <= ARRAY_SIZE( i2cTrans ) );
   len *= sizeof( *i2cTrans );
 
-  assert_param( ARRAY_SIZE( i2cTrans >= transLen ) );
+  assert_param( ARRAY_SIZE( i2cTrans ) >= transLen );
 
   return len;
 }
@@ -151,9 +167,6 @@ size_t getI2cSequence( void ){
   * @retval none
   */
 void i2cReadWriteStart( void ){
-  uint32_t cr2;
-  uint8_t len;
-//  sBq30z55Dev * dev = bq30z55Dev;
 
   /* Выставим начальное состояние транзакции обработки данных. */
   i2cState = i2cTrans[transCount].state;
@@ -162,7 +175,7 @@ void i2cReadWriteStart( void ){
     i2cRegWrite();
   }
   else {
-    assert_param( i2cState == I2C_STATE_WRITE );
+    assert_param( i2cState == I2C_STATE_READ );
     i2cRegRead();
   }
 }
@@ -173,7 +186,7 @@ FlagStatus i2cRegWrite( void ){
   sI2cTrans * trans;
 
   assert_param( transCount < I2C_PACK_MAX );
-  trans = &(i2cTrans[transCount++]);
+  trans = &(i2cTrans[transCount]);
 
   trans->regCount = 0;
   trans->count = 0;
@@ -186,12 +199,12 @@ FlagStatus i2cRegWrite( void ){
 }
 
 
-FlagStatus i2cRegRead( uint8_t * reg, uint8_t reglen, uint8_t * data, uint16_t datalen ){
+FlagStatus i2cRegRead( void ) {
   FlagStatus rc = RESET;
   sI2cTrans * trans;
 
   assert_param( transCount < I2C_PACK_MAX );
-  trans = &(i2cTrans[transCount++]);
+  trans = &(i2cTrans[transCount]);
 
   trans->regCount = 0;
   trans->count = 0;
@@ -206,47 +219,49 @@ FlagStatus i2cRegRead( uint8_t * reg, uint8_t reglen, uint8_t * data, uint16_t d
 
 // Обработка прерываний при записи в регистр
 void i2cWriteHandle( I2C_TypeDef * i2c, sI2cTrans * trans ){
-  uint32_t sr1 = i2c->SR1;
+  uint32_t sr = i2c->SR1;
 
   assert_param( i2c == I2Cx );
-  // ITEVTEN
-  if( sr1 & I2C_SR1_STOPF ){
-    assert_param( trans->regLen == trans->regCount );
+  assert_param( i2cState == I2C_STATE_WRITE );
 
+  sr = (sr | i2c->SR2 << 16)  & FLAG_Mask;
+
+  // ITEVTEN
+  if( (sr & I2C_EVENT_MASTER_MODE_SELECT) == I2C_EVENT_MASTER_MODE_SELECT ){
+    // Старт-условие
+    assert_param( i2cState == I2C_STATE_WRITE );
+    i2c->DR = BQ30Z55_ADDR | I2C_WRITE_BIT;
+  }
+  if( (sr & I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED ){
+    // Адрес отправлен
+    i2c->DR = trans->reg.cmd;
+    trans->regCount++;
+    if( (trans->regLen > 1) || (trans->len) ){
+      i2c->CR2 |= I2C_CR2_ITBUFEN;
+    }
+  }
+  if( (sr & I2C_EVENT_MASTER_BYTE_TRANSMITTED) == I2C_EVENT_MASTER_BYTE_TRANSMITTED ){
+    assert_param( (trans->regCount == trans->regLen) && (trans->count == trans->len) );
+    i2c->CR1 |= I2C_CR1_STOP;
+    while( i2c->SR1 & I2C_SR1_TXE )
+    {}
+    assert_param( trans->regLen == trans->regCount );
     i2cState = I2C_STATE_END;
   }
-  else {
-    if( sr1 & I2C_SR1_SB ){
-      // Старт-условие
-      assert_param( i2cState == I2C_STATE_WRITE );
-      i2c->DR = BQ30Z55_ADDR | I2C_WRITE_BIT;
+  // ITBUFEN
+  else if( (sr & I2C_EVENT_MASTER_BYTE_TRANSMITTING) == I2C_EVENT_MASTER_BYTE_TRANSMITTING ){
+    if( trans->regCount < trans->regLen ){
+      i2c->DR = *(trans->reg.u8reg + trans->regCount++);
     }
-    if( sr1 & I2C_SR1_ADDR ){
-      // Адрес отправлен
-      // Стираем флаг ADDR
-      (void)i2c->SR2;
-      i2c->DR = trans->reg.cmd;
-      trans->regCount++;
-    }
-    if( i2c->SR1 & I2C_SR1_BTF ){
-      assert_param( (trans->regCount == trans->regLen) && (trans->count == trans->len) );
-      i2c->CR1 |= I2C_CR1_STOP;
-    }
-    // ITBUFEN
-    if( i2c->SR1 & I2C_SR1_TXE ){
-      if( trans->regCount < trans->regLen ){
-        i2c->DR = trans->reg.u8reg + trans->regCount++;
-      }
-      else if( trans->count < trans->len ){
-        i2c->DR = trans->data + trans->count++;
-      }
-      else if( trans->count == trans->len ){
+    else if( trans->count < trans->len ){
+      i2c->DR = *(trans->data + trans->count++);
+      if( trans->count == trans->len ){
         i2c->CR2 &= ~I2C_CR2_ITBUFEN;
       }
-      else {
-        while(1)
-        {}
-      }
+    }
+    else {
+      while(1)
+      {}
     }
   }
 }
@@ -259,59 +274,64 @@ void i2cReadHandle( I2C_TypeDef * i2c, sI2cTrans * trans ){
   assert_param( i2c == I2Cx );
   assert_param( i2cState == I2C_STATE_READ );
 
-  if( sr1 & I2C_SR1_STOPF ){
-    assert_param( trans->len == trans->count );
-
-    i2cState = I2C_STATE_END;
-  }
-  else {
-    if( sr1 & I2C_SR1_SB ){
-      // Старт-условие
-      i2c->DR = BQ30Z55_ADDR | ((trans->rxDataFlag)? I2C_READ_BIT : I2C_WRITE_BIT);
+  if( sr1 & I2C_SR1_SB ){
+    // Старт-условие
+    if (trans->rxDataFlag){
+      i2c->DR = BQ30Z55_ADDR | I2C_READ_BIT;
     }
-    if( sr1 & I2C_SR1_ADDR ){
-      // Адрес отправлен
-      // Стираем флаг ADDR;
-      (void)i2c->SR2;
-      if(trans->rxDataFlag){
-        // Читаем Данные
-        if( trans->len == 1){
-          i2c->CR1 = (i2c->CR1 & ~I2C_CR1_ACK) | I2C_CR1_STOP;
-        }
+    else {
+      i2c->DR = BQ30Z55_ADDR;
+    }
+//      i2c->DR = BQ30Z55_ADDR | ((trans->rxDataFlag)? I2C_READ_BIT : I2C_WRITE_BIT);
+  }
+  if( sr1 & I2C_SR1_ADDR ){
+    // Адрес отправлен
+    // Стираем флаг ADDR;
+    (void)i2c->SR2;
+    if(trans->rxDataFlag){
+      if( trans->len == 1){
+        i2c->CR1 = (i2c->CR1 & ~I2C_CR1_ACK) | I2C_CR1_STOP;
+      }
+      else {
+        i2c->CR1 |= I2C_CR1_ACK;
+      }
+      trace_printf( "CR1:0x%x\n", i2c->CR1 );
+      i2c->CR2 |= I2C_CR2_ITBUFEN;
+    }
+    else {
+      // Пишем номер регистра
+      i2c->DR = (uint8_t)(trans->reg.u8reg[trans->regCount++]);
+      if( trans->regLen > 1){
         i2c->CR2 |= I2C_CR2_ITBUFEN;
       }
       else {
-        // Пишем номер регистра
-        i2c->DR = (uint8_t)*trans->reg++;
-        trans->regCount++;
-        if( trans->regLen > 1){
-          i2c->CR2 |= I2C_CR2_ITBUFEN;
-        }
+        i2c->CR1 |= I2C_CR1_START;
+        while((i2c->SR1 & I2C_SR1_SB) == 0)
+        {}
+        trans->rxDataFlag = SET;
       }
     }
-    if( i2c->SR1 & I2C_SR1_BTF ){
-      // Регистр отправили польностью - Рестарт
-      assert_param( trans->regCount == trans->regLen );
+  }
+  else if( (i2c->CR2 & I2C_CR2_ITBUFEN) && (sr1 & I2C_SR1_TXE) ){
+    assert_param( trans->regCount < trans->regLen );
+    i2c->DR = (uint8_t)(trans->reg.u8reg[trans->regCount++]);
+    if( trans->regCount == trans->regLen ){
+      i2c->CR2 &= ~I2C_CR2_ITBUFEN;
       i2c->CR1 |= I2C_CR1_START;
       trans->rxDataFlag = SET;
     }
-    if( sr1 & I2C_SR1_TXE ){
-      i2c->DR = (uint8_t)*trans->reg++;
-      trans->regCount++;
-      if( trans->regCount == trans->regLen ){
-        i2c->CR2 &= ~I2C_CR2_ITBUFEN;
-      }
+  }
+  else if( (i2c->CR2 & I2C_CR2_ITBUFEN) && (sr1 & I2C_SR1_RXNE) ){
+    assert_param( trans->len > 0 );
+    trans->data[trans->count++] = i2c->DR;
+    if( (trans->len - trans->count) == 1 ){
+      i2c->CR1 = (i2c->CR1 & ~I2C_CR1_ACK) | I2C_CR1_STOP;
     }
-    if( sr1 & I2C_SR1_RXNE ){
-      // При записи отправляем только один байт данных
-      assert_param( trans->len > 0 );
-      trans->data[trans->count++] = i2c->DR;
-      if( (trans->len - trans->count) == 1 ){
-        i2c->CR1 = (i2c->CR1 & ~I2C_CR1_ACK) | I2C_CR1_STOP;
-      }
-      else if( (trans->len - trans->count) == 0 ){
-        i2c->CR2 &= ~I2C_CR2_ITBUFEN;
-      }
+    else if( trans->len == trans->count ){
+      i2c->CR2 &= ~I2C_CR2_ITBUFEN;
+      while( i2c->CR1 & I2C_CR1_STOP )
+      {}
+      i2cState = I2C_STATE_END;
     }
   }
 }
@@ -345,15 +365,19 @@ void i2cClock( void ){
   switch( i2cState ) {
     case I2C_STATE_IDLE:
       if (!i2cIsBusy()) {
-        uint32_t seqlen = getI2cSequence();
-
-        assert_param(transCount == 0);
-        i2cReadWriteStart();
+        if( transCount ){
+          i2cReadWriteStart();
+        }
+        else if( (seqlen = getI2cSequence()) ){
+          assert_param(transCount == 0);
+          i2cReadWriteStart();
+        }
       }
       break;
     case I2C_STATE_END:
       if( ++transCount == transLen ){
         // Обработка и сохранение полученных данных
+        transCount = 0;
       }
       i2cState = I2C_STATE_IDLE;
       break;
@@ -384,6 +408,8 @@ void i2cInit( void ){
   // I2C GPIO setup
   gpioPinSetup( &i2cPinScl );
   gpioPinSetup( &i2cPinSda );
+  gpioPinSetup( &i2cPinSclPu );
+  gpioPinSetup( &i2cPinSdaPu );
 
   // I2C periphery setup
   RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;

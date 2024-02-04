@@ -12,10 +12,12 @@
 
 #define I2Cx                 I2C1
 #define I2C_FS_SPEED         400000UL
+#define I2C_SM_SPEED         10000UL
+#define I2C_FS_EN            0        // Fast mode enable
 //#define I2C_ADDR             (0x6D << 1)
 
-#define I2C_WRITE_BIT       0x1
-#define I2C_READ_BIT        0x0
+#define I2C_WRITE_BIT       0x0
+#define I2C_READ_BIT        0x1
 
 #define I2C_PACK_MAX        128
 #define I2C_BUSY_TOUT       50

@@ -12,12 +12,42 @@
 #include "bq30z55_smbus.h"
 #include "bq30z55_reg.h"
 
-static inline sI2cTrans * bq30zAuth( sI2cTrans * trans, uint8_t * data ) {
+static inline sI2cTrans * mpr121afe1Write( sI2cTrans * trans, uint8_t * pdata, FlagStatus pec ) {
+  trans->state = I2C_STATE_WRITE;
+  trans->reg.cmd = 0x5c;
+  trans->regLen = 1;
+//  trans->reg.subcmd1 = MFR_ACC_DATA;
+//  trans->reg.subcmd2 = 0x00;
+  trans->pec = pec;
+  trans->len = 1;
+  trans->data = pdata;
+  trans->tout = 1;
+  trans->parsed = false;
+  trans++;
+  return trans;
+}
+
+static inline sI2cTrans * mpr121afe2Write( sI2cTrans * trans, uint8_t * pdata, FlagStatus pec ) {
+  trans->state = I2C_STATE_WRITE;
+  trans->reg.cmd = 0x5d;
+  trans->regLen = 1;
+//  trans->reg.subcmd1 = MFR_ACC_DATA;
+//  trans->reg.subcmd2 = 0x00;
+  trans->pec = pec;
+  trans->len = 1;
+  trans->data = pdata;
+  trans->tout = 1;
+  trans->parsed = false;
+  trans++;
+  return trans;
+}
+
+static inline sI2cTrans * bq30zAuth( sI2cTrans * trans, uint8_t * data, FlagStatus pec ) {
   trans->state = I2C_STATE_WRITE;
   trans->reg.cmd = MFR_ACCESS;
   trans->reg.subcmd1 = MFR_ACC_DATA;
 //  trans->reg.subcmd2 = 0x00;
-  trans->pec = BQ30Z55_PEC;
+  trans->pec = pec;
   trans->len = 512;
   trans->data = data;
   trans->tout = 250;

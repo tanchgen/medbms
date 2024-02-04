@@ -141,7 +141,8 @@ typedef struct {
   uint16_t t0;                // Temperature_0        0.1 гр.Ц
 } sBq30z55Dev;
 
-extern const uint8_t bq30zIdKey[20];
+extern sBq30z55Dev bq30z55Dev;
+extern const uint8_t bq30zIdKey[16];
 extern FlagStatus cfgFlag;
 
 #endif /* BQ30Z55_H_ */

@@ -13,6 +13,31 @@
 #include "bq30z55_reg.h"
 
 // ==============================================================================================
+static inline sI2cTrans * mpr121afe1( sI2cTrans * trans, uint8_t * pdata ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = 0x5c;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 1;
+  trans->data = pdata;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
+
+static inline sI2cTrans * mpr121afe2( sI2cTrans * trans, uint8_t * pdata ) {
+  trans->state = I2C_STATE_READ;
+  trans->reg.cmd = 0x5d;
+  trans->regLen = 1;
+  trans->pec = BQ30Z55_PEC;
+  trans->len = 1;
+  trans->data = pdata;
+  trans->tout = 0;
+  trans->parsed = true;
+  trans++;
+  return trans;
+}
 
 // ================================== INPUT_SEQUENCE ============================================
 // BatteryMode
@@ -156,7 +181,6 @@ static inline sI2cTrans * bq30zChI( sI2cTrans * trans ) {
 }
 
 // ChargingVoltage
-trans = bq30zChV( trans );          // 1
 static inline sI2cTrans * bq30zChV( sI2cTrans * trans ) {
   trans->state = I2C_STATE_READ;
   trans->reg.cmd = CHARGE_VOLT;
@@ -171,7 +195,6 @@ static inline sI2cTrans * bq30zChV( sI2cTrans * trans ) {
 }
 
 // BatteryStatus
-trans = bq30zBattStatus( trans );          // 1
 static inline sI2cTrans * bq30zBattStatus( sI2cTrans * trans ) {
   trans->state = I2C_STATE_READ;
   trans->reg.cmd = BATT_STATUS;
@@ -186,7 +209,6 @@ static inline sI2cTrans * bq30zBattStatus( sI2cTrans * trans ) {
 }
 
 // CycleCount
-trans = bq30zCycleCount( trans );          // 1
 static inline sI2cTrans * bq30zCycleCount( sI2cTrans * trans ) {
   trans->state = I2C_STATE_READ;
   trans->reg.cmd = CYCLE_COUNT;

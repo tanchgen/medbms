@@ -16,9 +16,9 @@
 
 #define TALLOC_ARRAY_SIZE   8192
 
-//uint8_t tallocArray[TALLOC_ARRAY_SIZE] __aligned(4);
+uint8_t tallocArray[TALLOC_ARRAY_SIZE] __aligned(4);
 
-static inline void stateProcess( void );
+//static inline void stateProcess( void );
 
 // ----- main() ---------------------------------------------------------------
 #if SWO_ENABLE
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	(void)argv;
 
   // Tiny memory allocated init
-//  ta_init( tallocArray, tallocArray+TALLOC_ARRAY_SIZE, 256, 16, sizeof(int) );
+  ta_init( tallocArray, tallocArray+TALLOC_ARRAY_SIZE, 64, 16, sizeof(int) );
 
   /*
    *  Инициализация периферии.
@@ -62,51 +62,52 @@ int main(int argc, char* argv[]) {
 
   ifaceEnable();
 
-  mDelay(INIT_TOUT);
+  mDelay( 500 );
+//  mDelay(INIT_TOUT);
 #ifdef DEBUG
-  trace_puts("ALKO 2 Run");
+  trace_puts("BMS Run");
 #endif
 
   // Infinite loop
   while (1) {
-    stateProcess();
+//    stateProcess();
     ifaceClock();
   }
 }
 
 
-static inline void stateProcess( void ){
-  // Обработаем Машину состояний
-
-  // Обработаем Машину состояний
-  switch( measState ){
-    case MEASST_OFF:
-      stateOff();
-      break;
-//    case MEASST_REL_EN:
+//static inline void stateProcess( void ){
+//  // Обработаем Машину состояний
+//
+//  // Обработаем Машину состояний
+//  switch( measState ){
+//    case MEASST_OFF:
+//      stateOff();
 //      break;
-    case MEASST_START_PROB:
-      stateStart();
-      break;
-    case MEASST_FLOW_PROB:
-      stateFlow();
-      break;
-    case MEASST_END_PROB:
-      stateEnd();
-      break;
-//    case MEASST_PROC:
-//      stateProc();
+////    case MEASST_REL_EN:
+////      break;
+//    case MEASST_START_PROB:
+//      stateStart();
 //      break;
-    case MEASST_FIN:
-      stateFin();
-      break;
-    case MEASST_FAULT:
-      stateFault();
-      break;
-    default:
-      break;
-  }
-}
+//    case MEASST_FLOW_PROB:
+//      stateFlow();
+//      break;
+//    case MEASST_END_PROB:
+//      stateEnd();
+//      break;
+////    case MEASST_PROC:
+////      stateProc();
+////      break;
+//    case MEASST_FIN:
+//      stateFin();
+//      break;
+//    case MEASST_FAULT:
+//      stateFault();
+//      break;
+//    default:
+//      break;
+//  }
+//}
 
 /**
   * @brief  This function is executed in case of error occurrence.

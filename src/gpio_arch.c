@@ -10,10 +10,10 @@
   extern uint32_t simulStart;
 #endif // SIMUL
 
-sGpioPin gpioPinAlcoRst = {GPIOA, 0, GPIO_Pin_3, 3, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_SET, Bit_SET, RESET };
-sGpioPin gpioPinRelEn = {GPIOA, 0, GPIO_Pin_5, 5, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
-sGpioPin gpioPinRelOn = {GPIOA, 0, GPIO_Pin_4, 4, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
-sGpioPin gpioPinZoom = {GPIOA, 0, GPIO_Pin_8, 8, GPIO_MODE_AFPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
+//sGpioPin gpioPinAlcoRst = {GPIOA, 0, GPIO_Pin_3, 3, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_SET, Bit_SET, RESET };
+//sGpioPin gpioPinRelEn = {GPIOA, 0, GPIO_Pin_5, 5, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
+//sGpioPin gpioPinRelOn = {GPIOA, 0, GPIO_Pin_4, 4, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
+//sGpioPin gpioPinZoom = {GPIOA, 0, GPIO_Pin_8, 8, GPIO_MODE_AFPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
 
 #if PIN_TEST_EN
 sGpioPin gpioPinTest = {GPIOB, 1, GPIO_Pin_0, 0, GPIO_MODE_OPP_10, GPIO_NOPULL, Bit_RESET, Bit_RESET, RESET };
@@ -40,41 +40,6 @@ struct timer_list  measOnCanTimer;
 
 // =================== Прототипы функций ====================================
 // ==========================================================================
-
-
-/**
-  * @brief  Обработчик таймаута восстановления после ошибки
-  *
-  * @param[in]  arg  NULL
-  *
-  * @retval none
-  */
-static void measOnCan(uintptr_t arg){
-  (void)arg;
-  // Система выключена полностью и готова к повторному включению
-  if( measDev.prmContinuous ){
-    continueStart();
-  }
-  else {
-    onCan = SET;
-  }
-#if SIMUL
-  simulStart = mTick + 2000;
-#endif // SIMUL
-}
-
-
-/**
-  * @brief  Обработчик таймаута работы АЛКОМЕТРА
-  *
-  * @param[in]  arg  NULL
-  *
-  * @retval none
-  */
-//static void alcoOffTout(uintptr_t arg){
-//  (void)arg;
-//  gpioPinSetNow( &gpioPinAlcoRst );
-//}
 
 
 ///**
@@ -164,6 +129,7 @@ void FRST_KEY_TIM_IRQH( void ) {
 }
 */
 
+/*
 void REL_PULSE_TIM_IRQH( void ) {
   REL_PULSE_TIM->SR = 0;
   // Выключаем соленоид
@@ -171,6 +137,7 @@ void REL_PULSE_TIM_IRQH( void ) {
   measDev.status.relEnd = SET;
   measDev.rel = RESET;
 }
+*/
 
 
 /**
@@ -181,6 +148,7 @@ void REL_PULSE_TIM_IRQH( void ) {
   *
   * @retval none
   */
+/*
 void pulseTimInit( TIM_TypeDef * portim, uint16_t tout ){
   FlagStatus rc;
   uint16_t psc;
@@ -194,7 +162,7 @@ void pulseTimInit( TIM_TypeDef * portim, uint16_t tout ){
   assert_param( rc == RESET );
 #else
   (void)rc;
-#endif /* USE_FULL_ASSERT */
+#endif  USE_FULL_ASSERT
   portim->PSC = psc;
   // Время работы таймера 100мкс .
   portim->ARR = ( 10 * tout ) -1;
@@ -207,6 +175,7 @@ void pulseTimInit( TIM_TypeDef * portim, uint16_t tout ){
     NVIC_SetPriority( REL_PULSE_TIM_IRQn, 6 );
   }
 }
+*/
 
 
 
@@ -303,6 +272,7 @@ void keyTimInit( TIM_TypeDef * keytim ){
 
 
 /* ZOOMER_TIM init function */
+/*
 void zoomTimInit( void ){
   ZOOM_TIM_CLK_EN;
   gpioPinSetup( &gpioPinZoom );
@@ -318,6 +288,7 @@ void zoomTimInit( void ){
   // Контроль выводов при выключении таймера:
   ZOOM_TIM->BDTR = TIM_BDTR_AOE | TIM_BDTR_MOE | TIM_BDTR_OSSI | TIM_BDTR_OSSR;
 }
+*/
 
 
 void zoomOn( void ){
@@ -347,13 +318,15 @@ EXTI->PR = pin;
   * @retval none
   */
 void gpioPulse( sGpioPin * pin ){
+  (void)pin;
+/*
   if( pin == &gpioPinRelOn ){
     gpioPinSetNow( pin );
     REL_PULSE_TIM->EGR = TIM_EGR_UG;
     REL_PULSE_TIM->CR1 |= TIM_CR1_CEN;
-    measDev.status.relStart = RESET;
     relOnCount++;
   }
+*/
 }
 
 
@@ -369,13 +342,13 @@ void gpioClock( void ){
 #if DEBUG_TRACE
   trace_puts("Function: Clock FPGA");
 #endif
-  if( measDev.status.relStart ){
-    measDev.tout = mTick + measDev.relPulse;
-    // Отключаем источник питания от соленоида
-    gpioPinResetNow( &gpioPinRelEn );
-    gpioPulse( &gpioPinRelOn );
-    measDev.status.relStart = RESET;
-  }
+//  if( measDev.status.relStart ){
+//    measDev.tout = mTick + measDev.relPulse;
+//    // Отключаем источник питания от соленоида
+//    gpioPinResetNow( &gpioPinRelEn );
+//    gpioPulse( &gpioPinRelOn );
+//    measDev.status.relStart = RESET;
+//  }
 //  else if( measDev.status.relEnd ){
 //    measDev.tout = mTick + measDev.relPulse;
 //    gpioPulse( &gpioPinRelOn );
@@ -396,7 +369,7 @@ void gpioEnable( void ) {
 #endif
 
   timerMod( &measOnCanTimer, TOUT_1500 );
-  gpioPinSetNow( &gpioPinRelEn );
+//  gpioPinSetNow( &gpioPinRelEn );
 }
 
 /**
@@ -412,19 +385,17 @@ void gpioInit( void ){
   trace_puts("Function: Init GPIO");
 #endif
 
-  gpioPinSetup( &gpioPinRelEn );
-  gpioPinSetup( &gpioPinRelOn );
+//  gpioPinSetup( &gpioPinRelEn );
+//  gpioPinSetup( &gpioPinRelOn );
 
 #if PIN_TEST_EN
   gpioPinSetup( &gpioPinTest );
 #endif // PIN_TEST_EN
 
-  pulseTimInit( REL_PULSE_TIM, measDev.relPulse * 10 );
-  zoomTimInit();
+//  zoomTimInit();
 
   // ----------- TIMERS ---------------------------
-  timerSetup( &measOnCanTimer, measOnCan, (uintptr_t)NULL );
-//  timerSetup( &alcoOffTimer, alcoOffTout, (uintptr_t)NULL);
+//  timerSetup( &measOnCanTimer, measOnCan, (uintptr_t)NULL );
 //  timerSetup( &pwrOffToutTimer, pwrOffTout, (uintptr_t)NULL);
 }
 

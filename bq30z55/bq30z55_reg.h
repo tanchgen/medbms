@@ -92,8 +92,8 @@ typedef enum {
   OCND_FLAG = 7,              // CONDITION_FLAG = 7
   CHARGE_CTRL_EN = 8,         // CHARGE_CONTROLLER_ENABLED = 8
   PRIM_BATT = 9,              // PRIMARY_BATTERY       = 9
-  RESERVED10 = 10,            // RESERVED10 = 10
-  RESERVED11 = 11,            // RESERVED11 = 11
+  SBS_RSRV10 = 10,            // RESERVED10 = 10
+  SBS_RSRV11 = 11,            // RESERVED11 = 11
   RESERVED12 = 12,            // RESERVED12 = 12
   ALRM_MODE = 13,             // ALARM_MODE = 13
   CHARGER_MODE = 14,          // CHARGER_MODE = 14
@@ -109,7 +109,7 @@ typedef enum {
   INITIALIZED = 7,
   REMAINING_TIME_ALRM = 8,
   REMAINING_CAPACITY_ALRM = 9,
-  RESERVED10 = 10,
+  SBS_BATT_RSRV10 = 10,
   TERMINATE_DISCHARGE_ALRM = 11,
   OT_ALRM = 12,
   RESERVED13 = 13,

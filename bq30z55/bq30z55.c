@@ -19,10 +19,12 @@ sBq30z55Dev bq30z55Dev;
 
 // --------------------- ACCESS FUNCTION ----------------------------------
 //
-eErr bq30zRng( rngM ){
+eErr bq30zRng( uint8_t * rngM ){
   eErr rc = ERR_OK;
 
   // TODO: Заполнить 160бит RNG
+  (void)rngM;
+
   return rc;
 }
 
@@ -99,7 +101,7 @@ void bq30z55Auth( void ){
 
 
 // UNSEAL/FULL_ACCESS BQ30Z55
-void bq30z55Auth( void ){
+void bq30zUnseal( void ){
   /*
    * 1. Send Unseal (0x0031) or Full Access (0x0032) command to ManufacturerAccess().
    * 2. Read 160-bit message M from ManufacturerInput() in the
@@ -117,8 +119,8 @@ void bq30z55Auth( void ){
 
 
 void bq30z55Init( void ){
-  bq30z55Dev.cfgSequence = bq30CfgSeqNull;
-  bq30z55Dev.inSequence = bq30InSeqNull;
+  bq30z55Dev.cfgSequence = mpr121CfgSeq; // bq30zCfgSeq;
+  bq30z55Dev.inSequence = mpr121InSeq; //bq30zInSeq;
   bq30z55Dev.cfgFlag = RESET;
 }
 

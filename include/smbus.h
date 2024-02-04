@@ -5,10 +5,8 @@
 #include <stdint.h>
 
 
-enum {
-  PEC_DISABLE,
-  PEC_ENABLE
-};
+#define PEC_DISABLE         RESET
+#define PEC_ENABLE          SET
 
 
 /**
