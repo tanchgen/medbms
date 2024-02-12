@@ -377,6 +377,7 @@ void i2cClock( void ){
     case I2C_STATE_END:
       if( ++transCount == transLen ){
         // Обработка и сохранение полученных данных
+
         transCount = 0;
       }
       i2cState = I2C_STATE_IDLE;
